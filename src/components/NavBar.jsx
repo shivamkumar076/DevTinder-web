@@ -1,26 +1,35 @@
 import axios from "axios"
+
 import { useDispatch, useSelector } from "react-redux"
 import { Link, useNavigate } from "react-router-dom"
 import { BASE_URL } from "../utils/constants"
 import { removeUser } from "../utils/userSlice"
+// import api from "../utils/axiosInstance"
 
 const NavBar = () => {
   const dispatch=useDispatch();
   const navigate=useNavigate();
   const user=useSelector((store)=>store.user)
+
   
   const handleLogout=async()=>{
+    const token = localStorage.getItem('token');
+if(token){
     try{
       await axios.post(BASE_URL+"/logout",{},{
-        withCredentials:true
+        headers: { Authorization: `Bearer ${token}` },
+        // withCredentials:true
       })
+      // await api.post("/logout");
+      localStorage.removeItem('token');
       dispatch(removeUser());
+
       return navigate("/login");
 
     }catch(err){
       console.error(err)
     }
-  }
+  }}
   return (
     <div>
       <div className="navbar bg-base-300 shadow-sm">
@@ -28,7 +37,7 @@ const NavBar = () => {
     <Link to="/" className="btn btn-ghost text-xl">DevTinder</Link>
   </div>
   <div  className="flex gap-2">
-    {/* <p className="flex items-center">Welcome {user.firstName}</p> */}
+    <p className="flex items-center"> {user && (user.firstName)}</p>
     {user && (
       <div className="dropdown dropdown-end mx-5">
       <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
@@ -44,10 +53,16 @@ const NavBar = () => {
         <li>
           <Link to="/profile" className="justify-between">
             Profile
-            <span className="badge">New</span>
+           
           </Link>
         </li>
-        <li><a>Settings</a></li>
+        <li>
+          <Link to="/requests" className="justify-between">
+            Requests
+           
+          </Link>
+        </li>
+        <li><Link to="/connections">Connections</Link></li>
         <li><a onClick={handleLogout}>Logout</a></li>
       </ul>
     </div>)}
